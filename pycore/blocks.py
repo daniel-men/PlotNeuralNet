@@ -73,3 +73,13 @@ def block_Res( num, name, botton, top, s_filer=256, n_filer=64, offset="(0,0,0)"
     return lys
 
 
+def conv_relu_pool(conv_name, pool_name, offset, to, x, y, channels):
+    return [
+    to_ConvRelu(conv_name, offset=offset, to=to, width=channels, height=y, depth=x),
+    to_Pool(pool_name, height=y-8, depth=x-8)]
+
+def dense_dropout(dense_name, drop_name, offset, to, x, y, channels):
+    return [
+        dense_layer(dense_name, offset="(1,0,0)", to=to, x, y, channels),
+        dropout_layer(drop_name, to=dense_name)
+    ]

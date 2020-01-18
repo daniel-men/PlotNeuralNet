@@ -17,7 +17,7 @@ def to_cor():
 \def\ConvReluColor{rgb:yellow,5;red,5;white,5}
 \def\PoolColor{rgb:red,1;black,0.3}
 \def\UnpoolColor{rgb:blue,2;green,1;black,0.3}
-\def\FcColor{rgb:blue,5;red,2.5;white,5}
+\def\FcColor{rgb:blue,5;green,2.5;white,5}
 \def\FcReluColor{rgb:blue,5;red,5;white,4}
 \def\SoftmaxColor{rgb:magenta,5;black,7}   
 """
@@ -55,6 +55,27 @@ def to_Conv( name, s_filer=256, n_filer=64, offset="(0,0,0)", to="(0,0,0)", widt
         }
     };
 """
+
+# Convolution + ReLu
+def to_ConvRelu( name, offset="(0,0,0)", to="(0,0,0)", width=2, height=40, depth=40, caption=" ", x_label, y_label, z_label):
+    return r"""
+\pic[shift={ """+ offset +""" }] at """+ to +""" 
+    {RightBandedBox={
+        name="""+ name +""",
+        caption="""+ caption +""",
+        xlabel="""+ str(x_label) +""",
+        ylabel="""+ str(y_label) +""",
+        zlabel="""+ str(z_label) +""",
+        fill=\ConvColor,
+        bandfill=\ConvReluColor,
+        height="""+ str(height) +""",
+        width="""+ str(width) +""",
+        depth="""+ str(depth) +"""
+        }
+    };
+"""
+
+
 
 # Conv,Conv,relu
 # Bottleneck
@@ -163,6 +184,38 @@ def to_SoftMax( name, s_filer=10, offset="(0,0,0)", to="(0,0,0)", width=1.5, hei
         }
     };
 """
+
+
+def dense_layer(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, x_label="", y_label="", z_label="", caption=""):
+    return r"""
+\pic[shift={"""+ offset +"""}] at """+ to +"""  
+    {Box={
+        name="""+ name +""",
+        caption="""+ caption +""",
+        xlabel="""+ str(x_label) +""",
+        ylabel="""+ str(y_label) +""",
+        zlabel="""+ str(z_label) +""",
+        fill=\FcColor,
+        height="""+ str(height) +""",
+        width="""+ str(width) +""",
+        depth="""+ str(depth) +"""
+    """
+
+def dense_dropout_layer(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, x_label="", y_label="", z_label="", caption=""):
+    return r"""
+\pic[shift={"""+ offset +"""}] at """+ to +"""  
+    {RightBandedBox={
+        name="""+ name +""",
+        caption="""+ caption +""",
+        xlabel="""+ str(x_label) +""",
+        ylabel="""+ str(y_label) +""",
+        zlabel="""+ str(z_label) +""",
+        fill=\FcColor,
+        bandfill=\DropoutColor,
+        height="""+ str(height) +""",
+        width="""+ str(width) +""",
+        depth="""+ str(depth) +"""
+    """
 
 
 def to_connection( of, to):
