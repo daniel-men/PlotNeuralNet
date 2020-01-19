@@ -2,9 +2,13 @@
 *.log
 *.gz
 
-__pycache__
+**/__pycache__
 books
 project
+
+.idea
+
+**/*.pyc
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
