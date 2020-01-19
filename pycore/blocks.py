@@ -73,13 +73,14 @@ def block_Res( num, name, botton, top, s_filer=256, n_filer=64, offset="(0,0,0)"
     return lys
 
 
-def conv_relu_pool(conv_name, pool_name, offset, to, x, y, channels):
-    return [
-    to_ConvRelu(conv_name, offset=offset, to=to, width=channels, height=y, depth=x),
-    to_Pool(pool_name, height=y-8, depth=x-8)]
+def conv_relu_pool(conv_name, pool_name, x_label, offset="(0,0,0)", to="(0,0,0)", depth=40, height=40, width=1):
+    pool_offset = int(height/10)
+    return "\n".join([
+    to_ConvRelu(conv_name, offset=offset, to=to, width=width, height=height, depth=depth, x_label=str(x_label)),
+    to_Pool(pool_name, to="({}-east)".format(conv_name), height=str(height-pool_offset), depth=str(depth-pool_offset))])
 
-def dense_dropout(dense_name, drop_name, offset, to, x, y, channels):
-    return [
-        dense_layer(dense_name, offset="(1,0,0)", to=to, x, y, channels),
-        dropout_layer(drop_name, to=dense_name)
-    ]
+def dense_dropout(dense_name, drop_name, x_label, offset="(0,0,0)", to="(0,0,0)", depth=1, height=40, width=1):
+    return "\n".join([
+        dense_layer(dense_name, offset=offset, to=to, x_label=x_label, width=width, depth=depth, height=height),
+        dropout_layer(drop_name, to="({}-east)".format(dense_name), width=width, depth=depth, height=height)
+    ])

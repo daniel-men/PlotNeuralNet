@@ -20,6 +20,8 @@ def to_cor():
 \def\FcColor{rgb:blue,5;green,2.5;white,5}
 \def\FcReluColor{rgb:blue,5;red,5;white,4}
 \def\SoftmaxColor{rgb:magenta,5;black,7}   
+\def\DropoutColor{rgb:yellow,5}
+\def\FlattenColor{rgb:yellow,1;red,2;white,7}
 """
 
 def to_begin():
@@ -39,6 +41,40 @@ def to_input( pathfile, to='(-3,0,0)', width=8, height=8, name="temp" ):
 \node[canvas is zy plane at x=0] (""" + name + """) at """+ to +""" {\includegraphics[width="""+ str(width)+"cm"+""",height="""+ str(height)+"cm"+"""]{"""+ pathfile +"""}};
 """
 
+def base_layer(name, layer_type, fill_color, band_color=None, offset="(0,0,0)", to="(0,0,0)", width=2, height=40, depth=40, opacity=0.5, caption=None, x_label=None, y_label=None, z_label=None):
+    line_storage = []
+    pic_def = "\pic[shift={{ {} }}] at {}".format(offset, to)
+    layer_def = "\t{{{}={{".format(layer_type)
+    line_storage = [
+        pic_def,
+        layer_def,
+        "\t\tname={},".format(name),
+        "\t\tfill={},".format(fill_color),
+        "\t\twidth={},".format(width),
+        "\t\tdepth={},".format(depth),
+        "\t\theight={},".format(height),
+        "\t\topacity={},".format(opacity)
+    ]
+
+    if x_label:
+        line_storage.append("\t\txlabel={},".format(x_label))
+
+    if y_label:
+        line_storage.append("\t\tylabel={},".format(y_label))
+
+    if z_label:
+        line_storage.append("\t\tzlabel={},".format(z_label))
+
+    if caption:
+        line_storage.append("\t\tcaption={},".format(caption))
+
+    if band_color:
+        line_storage.append("\t\tbandfill={},".format(band_color))
+
+    line_storage.append("\t\t}")
+    line_storage.append("\t};")
+    return "\n".join(line_storage)
+
 # Conv
 def to_Conv( name, s_filer=256, n_filer=64, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, caption=" " ):
     return r"""
@@ -57,24 +93,8 @@ def to_Conv( name, s_filer=256, n_filer=64, offset="(0,0,0)", to="(0,0,0)", widt
 """
 
 # Convolution + ReLu
-def to_ConvRelu( name, offset="(0,0,0)", to="(0,0,0)", width=2, height=40, depth=40, caption=" ", x_label, y_label, z_label):
-    return r"""
-\pic[shift={ """+ offset +""" }] at """+ to +""" 
-    {RightBandedBox={
-        name="""+ name +""",
-        caption="""+ caption +""",
-        xlabel="""+ str(x_label) +""",
-        ylabel="""+ str(y_label) +""",
-        zlabel="""+ str(z_label) +""",
-        fill=\ConvColor,
-        bandfill=\ConvReluColor,
-        height="""+ str(height) +""",
-        width="""+ str(width) +""",
-        depth="""+ str(depth) +"""
-        }
-    };
-"""
-
+def to_ConvRelu( name, offset="(0,0,0)", to="(0,0,0)", width=2, height=40, depth=40, x_label=None, y_label=None, z_label=None, caption=None):
+    return base_layer(name, "RightBandedBox", "\\ConvColor", band_color="\\ConvReluColor", offset=offset, to=to, width=width, height=height, opacity=1., depth=depth, x_label=x_label, y_label=y_label, caption=caption)
 
 
 # Conv,Conv,relu
@@ -99,20 +119,13 @@ def to_ConvConvRelu( name, s_filer=256, n_filer=(64,64), offset="(0,0,0)", to="(
 
 
 # Pool
-def to_Pool(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=32, depth=32, opacity=0.5, caption=" "):
-    return r"""
-\pic[shift={ """+ offset +""" }] at """+ to +""" 
-    {Box={
-        name="""+name+""",
-        caption="""+ caption +r""",
-        fill=\PoolColor,
-        opacity="""+ str(opacity) +""",
-        height="""+ str(height) +""",
-        width="""+ str(width) +""",
-        depth="""+ str(depth) +"""
-        }
-    };
-"""
+def to_Pool(name, offset="(0,0,0)", to="(0,0,0)", x_label=None, y_label=None, z_label=None, width=1, height=32, depth=32, opacity=0.5, caption=None):
+    return base_layer(name, "Box", "\\PoolColor", offset=offset, to=to, width=width, height=height, opacity=opacity, depth=depth, y_label=y_label, caption=caption)
+
+# Flatten
+def flatten(name, offset="(0,0,0)", to="(0,0,0)", y_label=" ", width=1, height=1, depth=20, opacity=0.5, caption=None):
+    return base_layer(name, "Box", "\\FlattenColor", offset=offset, to=to, width=width, height=height, opacity=opacity, depth=depth, y_label=y_label, caption=caption)
+
 
 # unpool4, 
 def to_UnPool(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=32, depth=32, opacity=0.5, caption=" "):
@@ -186,36 +199,11 @@ def to_SoftMax( name, s_filer=10, offset="(0,0,0)", to="(0,0,0)", width=1.5, hei
 """
 
 
-def dense_layer(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, x_label="", y_label="", z_label="", caption=""):
-    return r"""
-\pic[shift={"""+ offset +"""}] at """+ to +"""  
-    {Box={
-        name="""+ name +""",
-        caption="""+ caption +""",
-        xlabel="""+ str(x_label) +""",
-        ylabel="""+ str(y_label) +""",
-        zlabel="""+ str(z_label) +""",
-        fill=\FcColor,
-        height="""+ str(height) +""",
-        width="""+ str(width) +""",
-        depth="""+ str(depth) +"""
-    """
+def dense_layer(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, opacity=1., x_label=None, y_label=None, z_label=None, caption=None):
+    return base_layer(name, "Box", "\\FcColor", offset=offset, to=to, width=width, height=height, opacity=opacity, depth=depth, x_label=x_label, y_label=y_label, caption=caption)
 
-def dense_dropout_layer(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, x_label="", y_label="", z_label="", caption=""):
-    return r"""
-\pic[shift={"""+ offset +"""}] at """+ to +"""  
-    {RightBandedBox={
-        name="""+ name +""",
-        caption="""+ caption +""",
-        xlabel="""+ str(x_label) +""",
-        ylabel="""+ str(y_label) +""",
-        zlabel="""+ str(z_label) +""",
-        fill=\FcColor,
-        bandfill=\DropoutColor,
-        height="""+ str(height) +""",
-        width="""+ str(width) +""",
-        depth="""+ str(depth) +"""
-    """
+def dropout_layer(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, opacity=1., x_label=None, y_label=None, z_label=None, caption=None):
+    return base_layer(name, "Box", "\\DropoutColor", offset=offset, to=to, width=width, height=height, opacity=opacity, depth=depth, x_label=x_label, y_label=y_label, caption=caption)
 
 
 def to_connection( of, to):
