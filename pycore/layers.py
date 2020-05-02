@@ -14,7 +14,6 @@ def ConvLayer(layer_config, offset, to):
     return to_Conv(layer_config["name"], depth=depth, height=height, width=width)
 
 def ConvReLuLayer(layer_config, offset, to):
-    print(layer_config)
     filters = layer_config["filters"]
     if filters > 100:
         factor = 3

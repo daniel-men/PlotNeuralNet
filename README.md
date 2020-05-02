@@ -23,11 +23,11 @@ Base on this [website](https://gist.github.com/rain1024/98dd5e2c6c8c28f9ea9d), p
     cd pyexamples/
     bash ../tikzmake.sh test_simple
     ```
-
+Tip: If you are in are Docker container set the environment variable DEBIAN_FRONTEND=noninteractive first.
 ## TODO
 
 - [X] Python interface
-- [ ] Add easy legend functionality
+- [X] Add easy legend functionality
 - [ ] Add more layer shapes like TruncatedPyramid, 2DSheet etc
 - [ ] Add examples for RNN and likes.
 

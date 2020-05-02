@@ -22,6 +22,7 @@ def to_cor():
 \def\SoftmaxColor{rgb:magenta,5;black,7}   
 \def\DropoutColor{rgb:yellow,5}
 \def\FlattenColor{rgb:yellow,1;red,2;white,7}
+\def\BatchNormColor{rgb:green,5}
 """
 
 def to_begin():

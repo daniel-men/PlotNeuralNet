@@ -2,6 +2,7 @@ import keras
 from .layers import *
 
 def parse_keras_model(model, legend=False):
+    paths, multi_path = find_connections(model)
     arch = [to_head( '.' ),
     to_cor(),
     to_begin()]
@@ -9,14 +10,20 @@ def parse_keras_model(model, legend=False):
     skip = False
     last_layer = ""
     legend_layers = set()
-    for i, layer in enumerate(config["layers"]):
+    layers = {l["config"]["name"]: l for l in config["layers"]}
+    for i, layer in enumerate(layers):
         script = ""
         if skip:
             skip = False
             continue
 
-        layer_config = layer["config"]
-        class_name = layer["class_name"]
+        layer_config = layers[layer]["config"]
+        class_name = layers[layer]["class_name"]
+
+        if multi_path and layer not in paths:
+            for d in [d for d in paths.values() if isinstance(d, dict)]:
+                if layer in d:
+                    pass
 
         if i == 0:
             offset = "(0,0,0)"
@@ -85,5 +92,51 @@ def parse_keras_model(model, legend=False):
 
     arch.append(to_end())
     return arch
+
+def find_connections(model):
+    multi_path = False
+    #model.get_config()["layers"].reverse()
+    predecessors = {}
+
+    if not any(["inbound_nodes" in layer for layer in model.get_config()["layers"]]):
+        return model.get_config()["layers"], multi_path
+
+    for layer in model.get_config()["layers"]:
+        if "inbound_nodes" in layer:
+            inbound_layers = layer["inbound_nodes"]
+            if len(inbound_layers) > 0:
+                inbound_layers = [il[0] for il in inbound_layers[0]]
+                name = layer["config"]["name"]
+                if name in predecessors:
+                    predecessors[name].extend(inbound_layers)
+                else:
+                    predecessors[name] = inbound_layers
+
+    paths = {}
+    for layer, pre in predecessors.items():
+        if len(pre) > 1:
+            multi_path = True
+            paths[layer] = pre
+            for pred in pre:
+                pred_orig = pred
+                l = {}
+                while pred in predecessors:
+                    l[pred] = predecessors[pred]
+                    pred = predecessors[pred][0]
+                paths[pred_orig] = l
+        else:
+            paths[layer] = pre
+
+    if multi_path:
+        # Remove double entries from path
+        for k,v in paths.copy().items():
+            if isinstance(v, dict):
+                for k_ in v:
+                    if k == k_:
+                        continue
+                    paths.pop(k_)
+    print(paths)
+    return paths, multi_path
+    
 
 
